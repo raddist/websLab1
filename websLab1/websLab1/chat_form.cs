@@ -12,6 +12,7 @@ namespace websLab1
 {
     public partial class chat_form : Form
     {
+        //pointer to Sign In form
         SignIN_form old_frm;
 
         public chat_form( SignIN_form old_frm, string username)
@@ -31,6 +32,19 @@ namespace websLab1
         private void sent_btn_Click(object sender, EventArgs e)
         {
             //sent message handler
+        }
+
+        private void chat_form_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (e.CloseReason != CloseReason.UserClosing)
+            {
+                old_frm.Close();
+            }
+        }
+
+        private void chat_form_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            //need to and work with server
         }
     }
 }

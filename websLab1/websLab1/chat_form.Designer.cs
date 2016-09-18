@@ -39,6 +39,8 @@
             this.port_lbl = new System.Windows.Forms.Label();
             this.sent_btn = new System.Windows.Forms.Button();
             this.input_TextBox = new System.Windows.Forms.RichTextBox();
+            this.title_private = new System.Windows.Forms.Label();
+            this.cancel_btn = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // userList_panel
@@ -141,17 +143,41 @@
             // 
             // input_TextBox
             // 
-            this.input_TextBox.Location = new System.Drawing.Point(197, 417);
+            this.input_TextBox.Location = new System.Drawing.Point(194, 417);
             this.input_TextBox.Name = "input_TextBox";
-            this.input_TextBox.Size = new System.Drawing.Size(468, 96);
+            this.input_TextBox.Size = new System.Drawing.Size(471, 96);
             this.input_TextBox.TabIndex = 10;
             this.input_TextBox.Text = "";
+            // 
+            // title_private
+            // 
+            this.title_private.AutoSize = true;
+            this.title_private.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.title_private.Location = new System.Drawing.Point(194, 394);
+            this.title_private.Name = "title_private";
+            this.title_private.Size = new System.Drawing.Size(51, 17);
+            this.title_private.TabIndex = 11;
+            this.title_private.Text = "default";
+            this.title_private.Visible = false;
+            // 
+            // cancel_btn
+            // 
+            this.cancel_btn.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.cancel_btn.Location = new System.Drawing.Point(421, 391);
+            this.cancel_btn.Name = "cancel_btn";
+            this.cancel_btn.Size = new System.Drawing.Size(75, 23);
+            this.cancel_btn.TabIndex = 12;
+            this.cancel_btn.Text = "Cancel";
+            this.cancel_btn.UseVisualStyleBackColor = true;
+            this.cancel_btn.Visible = false;
             // 
             // chat_form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(806, 525);
+            this.Controls.Add(this.cancel_btn);
+            this.Controls.Add(this.title_private);
             this.Controls.Add(this.input_TextBox);
             this.Controls.Add(this.sent_btn);
             this.Controls.Add(this.port_lbl);
@@ -165,6 +191,8 @@
             this.Controls.Add(this.userList_panel);
             this.Name = "chat_form";
             this.Text = "chat_form";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.chat_form_FormClosing);
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.chat_form_FormClosed);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -183,5 +211,7 @@
         private System.Windows.Forms.Label port_lbl;
         private System.Windows.Forms.Button sent_btn;
         private System.Windows.Forms.RichTextBox input_TextBox;
+        private System.Windows.Forms.Label title_private;
+        private System.Windows.Forms.Button cancel_btn;
     }
 }
