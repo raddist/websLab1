@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Net;
+using System.Net.Sockets;
 
 namespace websLab1
 {
@@ -28,10 +30,19 @@ namespace websLab1
                 return;
             }
 
-            // connection with server
+            int _port = Convert.ToInt32(port_textBox.Text);
+            Socket _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            IPAddress _address = System.Net.IPAddress.Parse(ip_textBox.Text);
+            IPEndPoint _endPoint = new IPEndPoint(_address, _port);
+            _socket.Bind(_endPoint);
+            _socket.Connect(_endPoint);
 
-            chat_form new_frm = new chat_form(this, login_textBox.Text /* , socket */);
+            if (!_socket.Connected)
+            {
+                MessageBox.Show("Error!");
+            }
 
+            chat_form new_frm = new chat_form(this, login_textBox.Text, ip_textBox.Text, _port, _socket, _endPoint);
             error_lbl.Visible = false;
             this.Hide();
             new_frm.Show();
