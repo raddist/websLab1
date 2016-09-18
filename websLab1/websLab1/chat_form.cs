@@ -27,5 +27,10 @@ namespace websLab1
             old_frm.Show();
             this.Close();
         }
+
+        private void sent_btn_Click(object sender, EventArgs e)
+        {
+            //sent message handler
+        }
     }
 }

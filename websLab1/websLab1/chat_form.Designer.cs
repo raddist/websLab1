@@ -137,6 +137,7 @@
             this.sent_btn.TabIndex = 9;
             this.sent_btn.Text = "Sent";
             this.sent_btn.UseVisualStyleBackColor = true;
+            this.sent_btn.Click += new System.EventHandler(this.sent_btn_Click);
             // 
             // input_TextBox
             // 
