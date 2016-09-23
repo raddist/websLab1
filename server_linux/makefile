@@ -1,5 +1,5 @@
 server: server.cpp
-	g++ $^ -o $@
+	g++ $^ -o $@ -pthread -std=c++11
 
 client: client.cpp
 	g++ $^ -o $@

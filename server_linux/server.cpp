@@ -1,4 +1,6 @@
 
+#include "header_serv.h"
+
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -10,6 +12,15 @@
 #include <arpa/inet.h>
 
 #include <iostream>
+#include <string>
+#include <sstream>
+#include <list>     // подключаем заголовок списка
+#include <iterator> // заголовок итераторов
+#include <fcntl.h> // non blocking read
+
+void client_routine(int port); // будем обслуживать конкретного клиента
+
+
 using namespace std;
 
 const int SERV_PORT=13990; // Номер порта сервера по умолчанию
@@ -23,7 +34,7 @@ int main(int argc, char ** argv)
     else
         port_num = SERV_PORT;
 
-    const int BUFSIZE=400;
+    const int BUFSIZE=4096;
     int lfd; // дескриптор сокета
     int cfd; // дескриптор присоединенного сокета
     int nread; // кол-во прочтённых байт
@@ -32,7 +43,7 @@ int main(int argc, char ** argv)
     sockaddr_in servaddr; // Для адреса сервера
     sockaddr_in cliaddr; // Для адреса клиента
     if ((lfd = socket(AF_INET, SOCK_STREAM, 0))<0) // Создать сокет типа SOCK_STREAM
-        perror("socket"), exit(1);
+        perror("Socket error: "), exit(1);
 
     memset(&servaddr, 0, SIZE_SOCKADDR); // Обнулить структуру для адреса сервера
     servaddr.sin_family = AF_INET;
@@ -84,19 +95,48 @@ int main(int argc, char ** argv)
     // Сделать сокет lfd прослушиваемым
     if (listen(lfd, 5) < 0)
     perror("listen"), exit(1);
+
+
+
     for(;;)// ГЛАВНЫЙ ЦИКЛ СЕРВЕРА
     {
         clilen =SIZE_SOCKADDR;
         // Ожидаем соединения, в cfd получим дескриптор присоединенного сокета,
         // в cliaddr - адрес клиента, в clilen - число байт адреса
         if ((cfd = accept(lfd, (sockaddr *)&cliaddr, (socklen_t*)&clilen)) < 0)
-        perror("accept"), exit(1);
-        printf("connection established\n");
+        perror("Accept error: "), exit(1);
+        cout <<"Coming new connection ..." << endl;
+
         // Прочитать сообщение от клиента и вывести его в stdout
         while ((nread = read(cfd, buf, BUFSIZE))> 0)
-        write(1, &buf, nread);
+        {
+            buf[nread] = '\0';
+            std::string s(buf);
+            std::istringstream ss(s);
+            std::string CMD;
+            ss >> CMD;
+            if (CMD == "NEW")
+            {
+                cout << "New connection is initializing ..." << endl;
+                CLIENT_NODE *new_node = new CLIENT_NODE;
+                ss >> new_node.client_name;
+                // check here name unicness
+            }
+            else
+            {
+                cout << "Someone different (not client) wants to connect to server"<< endl;
+                break;
+            }
+
+            cout << CMD << endl;
+            //co0ut << s;
+
+        }
+#ifdef TESTING
+        cout<< "Did one loop" << endl;
+#endif
         if (nread == -1)
-        perror("read"), exit(1);
+        perror("Error reading socket: ");
         close(cfd); // закрыть присоединенный сокет
     }
 }
