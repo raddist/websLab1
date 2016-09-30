@@ -6,7 +6,14 @@
 //#include <iostream>
 
 using namespace std;
-enum Message_type { MSG, PVT, NEW, DCT, THR, ERN};
+enum Message_type { MSG,// - message                                  ( serv <> client)
+                    PVT,// - private message                          ( serv <> client)
+                    NEW,// - new member                               ( serv <> client)
+                    DCT,// - member disconnect                        ( serv <> client)
+                    LST,// - list of users already in chat            ( serv -> client)
+                    ERN,// - error name ( name already in use)        ( serv -> client)
+                    PRT // - port number for client to reconnect to   ( serv -> client)
+                    };
 
 struct client_node {
     string client_name;

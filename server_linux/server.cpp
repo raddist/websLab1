@@ -17,17 +17,27 @@
 #include <list>     // подключаем заголовок списка
 #include <iterator> // заголовок итераторов
 #include <fcntl.h> // non blocking read
+#include <thread>
+#include <mutex>
 
-void client_routine(int port); // будем обслуживать конкретного клиента
+int client_routine(int port); // будем обслуживать конкретного клиента
+void writing_head();
+void show_list(); // showing list of clients
+bool is_bad_name(string name); // check presence of name in list
 
-
+using std::list;
 using namespace std;
+
+list< CLIENT_NODE > CLIENT_LIST;
 
 const int SERV_PORT=13990; // Номер порта сервера по умолчанию
 const int SIZE_SOCKADDR=sizeof(struct sockaddr_in);
 int main(int argc, char ** argv)
 {
+    thread *thread_mass[500]; // массив дескрипторов дочерних потоков
+    int thread_mass_count = 0; // счетчик дескрипторов дочерних потоков
     cout << "Starting chat server ..." << endl;
+    int port_counter = 14000;
     int port_num;
     if (argc > 1)
         port_num = atoi(argv[1]);
@@ -107,7 +117,6 @@ int main(int argc, char ** argv)
         perror("Accept error: "), exit(1);
         cout <<"Coming new connection ..." << endl;
 
-        // Прочитать сообщение от клиента и вывести его в stdout
         while ((nread = read(cfd, buf, BUFSIZE))> 0)
         {
             buf[nread] = '\0';
@@ -118,13 +127,40 @@ int main(int argc, char ** argv)
             if (CMD == "NEW")
             {
                 cout << "New connection is initializing ..." << endl;
+                // check here name unickness
+
+                string nme;
+                ss >> nme;
+                if( is_bad_name(nme))
+                {
+                    string tmpstr = "ERN ";
+                    const char *sddd = tmpstr.c_str();
+                    write(cfd,sddd ,15);
+                    break;
+                }
                 CLIENT_NODE *new_node = new CLIENT_NODE;
-                ss >> new_node.client_name;
-                // check here name unicness
+                new_node->client_name = nme;
+                new_node->port = port_counter;
+                CLIENT_LIST.push_back(*new_node);
+
+                thread_mass[thread_mass_count++] = new thread(client_routine,port_counter);
+                port_counter++;
+                string tmpstr = "PRT ";
+                tmpstr += std::to_string(port_counter);
+                //cout << tmpstr2 << endl;
+                //tmpstr = tmpstr + tmpstr2 + " \0";
+                //std::cout << tmpstr << std::endl;
+                const char *sddd = tmpstr.c_str();
+
+
+                write(cfd,sddd ,10);
+                show_list();
+
             }
             else
             {
                 cout << "Someone different (not client) wants to connect to server"<< endl;
+                cout << CMD << endl;
                 break;
             }
 
@@ -139,4 +175,39 @@ int main(int argc, char ** argv)
         perror("Error reading socket: ");
         close(cfd); // закрыть присоединенный сокет
     }
+}
+
+
+int client_routine(int port)// будем обслуживать конкретного клиента
+{
+    cout << "Im daughter thread on port " << port << endl;
+    return 0;
+}
+
+void show_list()// showing list of clients
+{
+    cout << "List of users:" << endl;
+
+    list< CLIENT_NODE >::iterator iter = CLIENT_LIST.begin();
+    for ( ; iter != CLIENT_LIST.end() ; iter++)
+    {
+        cout << iter->client_name << endl;
+    }
+
+    std::cout << std::endl;
+}
+
+bool is_bad_name(string name) // check presence of name in list
+{
+    list< CLIENT_NODE >::iterator iter;
+    for ( iter = CLIENT_LIST.begin(); iter != CLIENT_LIST.end() ; iter++)
+    {
+        //cout <<"Iterr ";
+        if(iter->client_name == name)
+            return true;
+
+    }
+    return false;
+    //cout << endl;
+
 }
