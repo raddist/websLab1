@@ -17,46 +17,32 @@ namespace websLab1
     {
         //pointer to Sign In form
         SignIN_form old_frm;
-        Socket _socket;
-        EndPoint _endPoint;
 
-        static void Listening(Object Info)
-        {
-            Socket s = (Socket)Info;
-            //s.Listen(10);
-        }
+        NetworkStream stream;
+        TcpClient client;
 
-        public chat_form(SignIN_form old_frm, string username, string ip, int port, Socket _getSocket, IPEndPoint _getEndPoint)
+        public chat_form(SignIN_form old_frm, string username, string ip, int port, TcpClient TcpClient, NetworkStream NetworkStream)
         {
             InitializeComponent();
-
+            client = TcpClient;
             login_lbl.Text = username;
             ip_lbl.Text = ip;
             port_lbl.Text = Convert.ToString(port);
-            _socket = _getSocket;
-            _endPoint = (EndPoint)_getEndPoint;
-            Thread _thread = new Thread(new ParameterizedThreadStart(Listening));
-            _thread.Start(_socket);
+            stream = NetworkStream;
             this.old_frm = old_frm;
         }
 
         private void disconnect_btn_Click(object sender, EventArgs e)
         {
-            _socket.Shutdown(SocketShutdown.Both);
-            _socket.Close();
             old_frm.Show();
             this.Close();
         }
 
         private void sent_btn_Click(object sender, EventArgs e)
         {
-            string request = "Connection";
-            Byte[] bytesSent = Encoding.ASCII.GetBytes(request);
-            _socket.SendTo(bytesSent, _endPoint);
-            //Byte[] bytesReceived = new Byte[256];
-            //_socket.ReceiveFrom(bytesReceived, ref _endPoint);
+            Byte[] msg = System.Text.Encoding.ASCII.GetBytes("MSG " + input_TextBox.Text);
+            stream.Write(msg, 0, msg.Length);
         }
-
         private void chat_form_FormClosed(object sender, FormClosedEventArgs e)
         {
             if (e.CloseReason != CloseReason.UserClosing)
@@ -65,19 +51,6 @@ namespace websLab1
             }
         }
 
-        private void chat_form_FormClosing(object sender, FormClosingEventArgs e)
-        {
 
-        }
-
-        private void output_textBox_TextChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void userList_panel_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
     }
 }
