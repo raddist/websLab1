@@ -1,13 +1,14 @@
 // server header file for LAB1 SETI I COMMUNIC
 // author Rodin Andrey <andreyrodin405@yandex.ru>
-#define TESTING // uncomment this for additional info output
+//#define TESTING // uncomment this for additional info output
+#define LIST_OUTPUT // define id want to output list of users on connection
 
 #include <string>
 //#include <iostream>
 
 using namespace std;
 enum Message_type { MSG,// - message                                  ( serv <> client)
-                    PVT,// - private message                          ( serv <> client)
+                    PVT,// - private message                          ( serv <> client) "PVT кому от_кого сообщение"
                     NEW,// - new member                               ( serv <> client)
                     DCT,// - member disconnect                        ( serv <> client)
                     LST,// - list of users already in chat            ( serv -> client)

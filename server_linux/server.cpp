@@ -25,6 +25,7 @@ int writing_head(int); // функция потока-писаря ( пишет 
 void show_list(); // showing list of clients
 bool is_bad_name(string name); // check presence of name in list
 void write_do_desk(string s, int descriptor);// пишем в открытый порт
+void show_time();
 
 using std::list;
 using namespace std;
@@ -49,7 +50,7 @@ int main(int argc, char ** argv)
     else
         port_num = SERV_PORT;
 
-    const int BUFSIZE=4096;
+    const int BUFSIZE=1004096;
     int lfd; // дескриптор сокета
     int cfd; // дескриптор присоединенного сокета
     int nread; // кол-во прочтённых байт
@@ -233,7 +234,16 @@ int client_routine(int port)// будем обслуживать конкрет�
     }
 
     list< CLIENT_NODE >::iterator iter = CLIENT_LIST.begin();
+
+    string tmps = "";
+    int mems = 0;
     for ( ; iter != CLIENT_LIST.end() ; iter++) // находим себя в списке
+    {
+        mems++;
+        tmps+= iter->client_name + " ";
+    }
+
+    for (iter = CLIENT_LIST.begin() ; iter != CLIENT_LIST.end() ; iter++) // находим себя в списке
     {
         if(iter->port == port)
             break;
@@ -244,6 +254,14 @@ int client_routine(int port)// будем обслуживать конкрет�
     dashboard.client_name = iter->client_name;
     dashboard.message = "";
     dashboard.trig_sender = true; // всем отсылаем нового пользователя
+
+    for(int i = 0; i < 1000000; i++);// delay
+    string v = to_string(mems) +" "+ tmps;
+    dashboard.TYP = LST;
+    dashboard.client_name = iter->client_name;
+    dashboard.message = v;
+    dashboard.trig_sender = true;
+
 
     cout <<"Connection with " << iter->client_name<< " established." << endl;
 
@@ -262,7 +280,7 @@ int client_routine(int port)// будем обслуживать конкрет�
             string strr = ss.str();
             strr.erase(0, 4);
             dashboard.message = strr;
-            dashboard.trig_sender = true; // всем отсылаем нового пользователя
+            dashboard.trig_sender = true; // всем отсылаем сообщение
         }
         else if (CMD == "DCT")
         {
@@ -281,15 +299,28 @@ int client_routine(int port)// будем обслуживать конкрет�
             close(cfd);
             return 0;
         }
+        else if (CMD == "PVT")
+        {
+            dashboard.TYP = PVT;
+            ss >> dashboard.client_name; // имя получателя
+            string strr = ss.str();
+            strr.erase(0, 4);
+            dashboard.message = strr;
+            dashboard.trig_sender = true; //отсылаем приватное сообщение
+        }
         else
         {
-            cout << "Client sent unproper format message"<< endl;
-            break;
+            cout << "Client " << iter->client_name << " sent unproper format message"<< endl;
+
         }
         //cout << CMD << endl;
     }
     cerr << "Tcp connection with user " << iter->client_name << " failed. Closing port." << endl;
+    dashboard.TYP = DCT;
+    dashboard.client_name = iter->client_name;
     CLIENT_LIST.erase(iter);
+    dashboard.trig_sender = true;
+    close(cfd);
     //delete iter;
     return 0;
 }
@@ -340,11 +371,46 @@ int writing_head(int param)
                         }
                     }
                     break;
+                case PVT:
+                    s = "PVT " +dashboard.message;
+                    //s+= dashboard.client_name + " " + dashboard.message;
+                    for(iter = CLIENT_LIST.begin(); iter != CLIENT_LIST.end(); iter++)
+                    {
+                        if(iter->client_name == dashboard.client_name)
+                        {
+                            write_do_desk(s, iter->rw_descriptor);
+                            break;
+                        }
+                        else
+                            continue;
+                    }
+                    break;
+#ifdef LIST_OUTPUT // in "header_serv.h"
+                case LST:
+                    s = "LST " + dashboard.message;
+                    for(iter = CLIENT_LIST.begin(); iter != CLIENT_LIST.end(); iter++)
+                    {
+                        if(iter->client_name == dashboard.client_name)
+                        {
+                            write_do_desk(s, iter->rw_descriptor);
+                            break;
+                        }
+                        else
+                            continue;
+                    }
+                    break;
+#endif
+                }
+
             }
 
         }
-    }
     return 0;
+}
+
+void show_time()
+{
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 void show_list()// showing list of clients
