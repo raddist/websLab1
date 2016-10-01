@@ -21,9 +21,10 @@
 #include <mutex>
 
 int client_routine(int port); // будем обслуживать конкретного клиента
-void writing_head();
+int writing_head(int); // функция потока-писаря ( пишет всем кто в чате разную инфу)
 void show_list(); // showing list of clients
 bool is_bad_name(string name); // check presence of name in list
+void write_do_desk(string s, int descriptor);// пишем в открытый порт
 
 using std::list;
 using namespace std;
@@ -34,6 +35,10 @@ const int SERV_PORT=13990; // Номер порта сервера по умол
 const int SIZE_SOCKADDR=sizeof(struct sockaddr_in);
 int main(int argc, char ** argv)
 {
+    dashboard.trig_sender = false;
+
+
+    thread *wr_head = new thread(writing_head,0);
     thread *thread_mass[500]; // массив дескрипторов дочерних потоков
     int thread_mass_count = 0; // счетчик дескрипторов дочерних потоков
     cout << "Starting chat server ..." << endl;
@@ -133,6 +138,7 @@ int main(int argc, char ** argv)
                 ss >> nme;
                 if( is_bad_name(nme))
                 {
+                    cerr << "Client entered existing name."<< endl;
                     string tmpstr = "ERN ";
                     const char *sddd = tmpstr.c_str();
                     write(cfd,sddd ,15);
@@ -141,15 +147,13 @@ int main(int argc, char ** argv)
                 CLIENT_NODE *new_node = new CLIENT_NODE;
                 new_node->client_name = nme;
                 new_node->port = port_counter;
+                port_counter++;
                 CLIENT_LIST.push_back(*new_node);
 
-                thread_mass[thread_mass_count++] = new thread(client_routine,port_counter);
-                port_counter++;
+                thread_mass[thread_mass_count++] = new thread(client_routine,new_node->port);
+
                 string tmpstr = "PRT ";
-                tmpstr += std::to_string(port_counter);
-                //cout << tmpstr2 << endl;
-                //tmpstr = tmpstr + tmpstr2 + " \0";
-                //std::cout << tmpstr << std::endl;
+                tmpstr += std::to_string(new_node->port);
                 const char *sddd = tmpstr.c_str();
 
 
@@ -180,7 +184,144 @@ int main(int argc, char ** argv)
 
 int client_routine(int port)// будем обслуживать конкретного клиента
 {
+    const int BUFSIZE=4096;
+    int lfd; // дескриптор сокета
+    int cfd; // дескриптор присоединенного сокета
+    int nread; // кол-во прочтённых байт
+    int clilen; //  число байт адреса клиента
+    char buf[BUFSIZE]; // буфер для чтения
+    sockaddr_in servaddr; // Для адреса сервера
+    sockaddr_in cliaddr; // Для адреса клиента
+    if ((lfd = socket(AF_INET, SOCK_STREAM, 0))<0) // Создать сокет типа SOCK_STREAM
+        perror("Socket error in thread : "), exit(1);
+
+    memset(&servaddr, 0, SIZE_SOCKADDR); // Обнулить структуру для адреса сервера
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY); // Адрес сервера - любой
+    //IP адрес этого компьютера, преобразовать его в сетевой порядок
+    servaddr.sin_port = htons(port); // Порт сервера преобразуется в сетевой вид
+
+    if (bind(lfd, (sockaddr *) &servaddr, SIZE_SOCKADDR)<0)
+    {
+        cerr << "Cannot bind thread to port " << port << " : ";
+        perror(NULL);
+        exit(1);
+    }
+
+    if (listen(lfd, 5) < 0)
+    perror("listen"), exit(1);
+
+
     cout << "Im daughter thread on port " << port << endl;
+
+    clilen =SIZE_SOCKADDR;
+    // Ожидаем соединения, в cfd получим дескриптор присоединенного сокета,
+    // в cliaddr - адрес клиента, в clilen - число байт адреса
+    if ((cfd = accept(lfd, (sockaddr *)&cliaddr, (socklen_t*)&clilen)) < 0)
+    perror("Accept error: "), exit(1);
+
+    list< CLIENT_NODE >::iterator iter = CLIENT_LIST.begin();
+    for ( ; iter != CLIENT_LIST.end() ; iter++) // находим себя в списке
+    {
+        if(iter->port == port)
+            break;
+    }
+    iter->rw_descriptor = cfd; // кладем в список дескриптор для обращения
+
+    dashboard.TYP = NEW;
+    dashboard.client_name = iter->client_name;
+    dashboard.message = "";
+    dashboard.trig_sender = true; // всем отсылаем нового пользователя
+
+    cout <<"Connection with " << iter->client_name<< " established." << endl;
+
+//////// главный цикл потока
+    while ((nread = read(cfd, buf, BUFSIZE))> 0)
+    {
+        buf[nread] = '\0';
+        std::string s(buf);
+        std::istringstream ss(s);
+        std::string CMD;
+        ss >> CMD;
+        if (CMD == "MSG")
+        {
+            dashboard.TYP = MSG;
+            dashboard.client_name = iter->client_name;
+            string strr = ss.str();
+            strr.erase(strr.find('M'), 4);
+            dashboard.message = strr;
+            dashboard.trig_sender = true; // всем отсылаем нового пользователя
+        }
+        else if (CMD == "DCT")
+        {
+            dashboard.TYP = DCT;
+            dashboard.client_name = iter->client_name;
+            string strr = ss.str();
+            strr.erase(0, 3);
+            dashboard.message = strr;
+            dashboard.trig_sender = true; // всем отсылаем отключившегося пользователя
+        }
+        else
+        {
+            cout << "Client sent unproper format message"<< endl;
+            break;
+        }
+        cout << CMD << endl;
+    }
+
+    return 0;
+}
+
+int writing_head(int param)
+{
+    string s;
+    list< CLIENT_NODE >::iterator iter;
+    while(true)
+    {// cannot break this loop
+        if(dashboard.trig_sender)
+        {
+            dashboard.trig_sender = false;
+
+            switch(dashboard.TYP)
+            {
+                case NEW:
+                    s = "NEW ";
+                    s+= dashboard.client_name;
+                    for(iter = CLIENT_LIST.begin(); iter != CLIENT_LIST.end(); iter++)
+                    {
+                        if(iter->client_name == dashboard.client_name)
+                            continue;
+                        else
+                        {
+                            write_do_desk(s, iter->rw_descriptor);
+                        }
+                    }
+                    break;
+                case MSG:
+                    s = "MSG ";
+                    s+= dashboard.client_name + " " + dashboard.message;
+                    for(iter = CLIENT_LIST.begin(); iter != CLIENT_LIST.end(); iter++)
+                    {
+                            write_do_desk(s, iter->rw_descriptor);
+                    }
+                    break;
+                case DCT:
+                    s = "DCT ";
+                    s+= dashboard.client_name;
+                    for(iter = CLIENT_LIST.begin(); iter != CLIENT_LIST.end(); iter++)
+                    {
+                        if(iter->client_name == dashboard.client_name)
+                            continue;
+                        else
+                        {
+                            write_do_desk(s, iter->rw_descriptor);
+                        }
+                    }
+                    break;
+            }
+
+        }
+    }
     return 0;
 }
 
@@ -195,6 +336,13 @@ void show_list()// showing list of clients
     }
 
     std::cout << std::endl;
+}
+
+void write_do_desk(string s, int descriptor)// пишем в открытый порт
+{
+    const char *sddd = s.c_str();
+    write(descriptor,sddd, s.length()+1);
+
 }
 
 bool is_bad_name(string name) // check presence of name in list

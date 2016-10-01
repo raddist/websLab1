@@ -16,8 +16,9 @@ enum Message_type { MSG,// - message                                  ( serv <> 
                     };
 
 struct client_node {
-    string client_name;
-    int port;
+    string client_name; // obvious what that is
+    int port; // port on which this user is served
+    int rw_descriptor; // descriptor for write/read function to send/receive to/from client.
 };
 
 typedef struct client_node CLIENT_NODE;
