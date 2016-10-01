@@ -19,6 +19,7 @@
 #include <fcntl.h> // non blocking read
 #include <thread>
 #include <mutex>
+#include <ctime>
 
 int client_routine(int port); // будем обслуживать конкретного клиента
 int writing_head(int); // функция потока-писаря ( пишет всем кто в чате разную инфу)
@@ -42,6 +43,7 @@ int main(int argc, char ** argv)
     thread *wr_head = new thread(writing_head,0);
     thread *thread_mass[500]; // массив дескрипторов дочерних потоков
     int thread_mass_count = 0; // счетчик дескрипторов дочерних потоков
+    show_time();
     cout << "Starting chat server ..." << endl;
     int port_counter = 14000;
     int port_num;
@@ -59,7 +61,11 @@ int main(int argc, char ** argv)
     sockaddr_in servaddr; // Для адреса сервера
     sockaddr_in cliaddr; // Для адреса клиента
     if ((lfd = socket(AF_INET, SOCK_STREAM, 0))<0) // Создать сокет типа SOCK_STREAM
+    {
+        show_time();
         perror("Socket error: "), exit(1);
+    }
+
 
     memset(&servaddr, 0, SIZE_SOCKADDR); // Обнулить структуру для адреса сервера
     servaddr.sin_family = AF_INET;
@@ -73,12 +79,14 @@ int main(int argc, char ** argv)
         // Привязать сокет к адресу и порту сервера
         if (bind(lfd, (sockaddr *) &servaddr, SIZE_SOCKADDR)<0)
         {
+            show_time();
             cerr << "Cannot bind server to port " << port_num << " : ";
             perror(NULL);
             exit(1);
         }
         else
         {
+            show_time();
             cout << "Server listening on port " << port_num << endl;
         }
     }
@@ -95,6 +103,7 @@ int main(int argc, char ** argv)
                 }
                 else
                 {
+                    show_time();
                     cout << "Server listening on port " << port_num + counter << endl;
                     break;
                 }
@@ -102,6 +111,7 @@ int main(int argc, char ** argv)
         }
         if (counter >= 10)
         {
+            show_time();
             cerr << "Cannot bind server to ports " << SERV_PORT << "-"<< SERV_PORT +9<< " by default : ";
             perror(NULL);
             exit(1);
@@ -110,8 +120,10 @@ int main(int argc, char ** argv)
 
     // Сделать сокет lfd прослушиваемым
     if (listen(lfd, 5) < 0)
-    perror("listen"), exit(1);
-
+    {
+        show_time();
+        perror("listen"), exit(1);
+    }
 
 
     for(;;)// ГЛАВНЫЙ ЦИКЛ СЕРВЕРА
@@ -121,9 +133,11 @@ int main(int argc, char ** argv)
         // в cliaddr - адрес клиента, в clilen - число байт адреса
         if ((cfd = accept(lfd, (sockaddr *)&cliaddr, (socklen_t*)&clilen)) < 0)
         {
+            show_time();
             perror("Accept error: ");
             continue;
         }
+        show_time();
         cout <<"Coming new connection ..." << endl;
 
         while ((nread = read(cfd, buf, BUFSIZE))> 0)
@@ -135,6 +149,7 @@ int main(int argc, char ** argv)
             ss >> CMD;
             if (CMD == "NEW")
             {
+                show_time();
                 cout << "New connection is initializing ..." << endl;
                 // check here name unickness
 
@@ -142,6 +157,7 @@ int main(int argc, char ** argv)
                 ss >> nme;
                 if( is_bad_name(nme))
                 {
+                    show_time();
                     cerr << "Client entered existing name."<< endl;
                     string tmpstr = "ERN ";
                     const char *sddd = tmpstr.c_str();
@@ -167,20 +183,25 @@ int main(int argc, char ** argv)
             }
             else
             {
+                show_time();
                 cout << "Someone different (not client) wants to connect to server"<< endl;
-                cout << CMD << endl;
+                //cout << CMD << endl;
                 break;
             }
 
-            cout << CMD << endl;
+            //cout << CMD << endl;
             //co0ut << s;
 
         }
 #ifdef TESTING
+        show_time();
         cout<< "Did one loop" << endl;
 #endif
         if (nread == -1)
-        perror("Error reading socket: ");
+        {
+            show_time();
+            perror("Error reading socket: ");
+        }
         close(cfd); // закрыть присоединенный сокет
     }
 }
@@ -198,6 +219,7 @@ int client_routine(int port)// будем обслуживать конкрет�
     sockaddr_in cliaddr; // Для адреса клиента
     if ((lfd = socket(AF_INET, SOCK_STREAM, 0))<0) // Создать сокет типа SOCK_STREAM
     {
+        show_time();
         perror("Socket error in thread : ");
         return -1;
     }
@@ -210,6 +232,7 @@ int client_routine(int port)// будем обслуживать конкрет�
 
     if (bind(lfd, (sockaddr *) &servaddr, SIZE_SOCKADDR)<0)
     {
+        show_time();
         cerr << "Cannot bind thread to port " << port << " : ";
         perror(NULL);
         return -1;
@@ -221,7 +244,7 @@ int client_routine(int port)// будем обслуживать конкрет�
         return -1;
     }
 
-
+    show_time();
     cout << "Im daughter thread on port " << port << endl;
 
     clilen =SIZE_SOCKADDR;
@@ -229,6 +252,7 @@ int client_routine(int port)// будем обслуживать конкрет�
     // в cliaddr - адрес клиента, в clilen - число байт адреса
     if ((cfd = accept(lfd, (sockaddr *)&cliaddr, (socklen_t*)&clilen)) < 0)
     {
+        show_time();
         perror("Accept error: ");
         return -1;
     }
@@ -262,7 +286,7 @@ int client_routine(int port)// будем обслуживать конкрет�
     dashboard.message = v;
     dashboard.trig_sender = true;
 
-
+    show_time();
     cout <<"Connection with " << iter->client_name<< " established." << endl;
 
 //////// главный цикл потока
@@ -284,6 +308,7 @@ int client_routine(int port)// будем обслуживать конкрет�
         }
         else if (CMD == "DCT")
         {
+            show_time();
             cout << "Client " << iter->client_name << " disconnected." << endl;
             dashboard.TYP = DCT;
             dashboard.client_name = iter->client_name;
@@ -304,17 +329,19 @@ int client_routine(int port)// будем обслуживать конкрет�
             dashboard.TYP = PVT;
             ss >> dashboard.client_name; // имя получателя
             string strr = ss.str();
-            strr.erase(0, 4);
+            strr.erase(0, dashboard.client_name.length() + 4);
+            strr = iter->client_name  + strr;
             dashboard.message = strr;
             dashboard.trig_sender = true; //отсылаем приватное сообщение
         }
         else
         {
+            show_time();
             cout << "Client " << iter->client_name << " sent unproper format message"<< endl;
-
         }
         //cout << CMD << endl;
     }
+    show_time();
     cerr << "Tcp connection with user " << iter->client_name << " failed. Closing port." << endl;
     dashboard.TYP = DCT;
     dashboard.client_name = iter->client_name;
@@ -410,11 +437,18 @@ int writing_head(int param)
 
 void show_time()
 {
+    char buffer[80];
+    time_t seconds = time(NULL);
+    tm* timeinfo = localtime(&seconds);
+    char format[] = "[ %Y %H:%M:%S ] ";
+    strftime(buffer, 80, format, timeinfo);
+    cerr << buffer;
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 void show_list()// showing list of clients
 {
+    show_time();
     cout << "List of users:" << endl;
 
     list< CLIENT_NODE >::iterator iter = CLIENT_LIST.begin();
