@@ -132,6 +132,7 @@ int main(int argc, char ** argv)
 		{
 			//cerr << nread << endl;
 			printf(buf);
+			printf("\n");
 			//write(1,buf,nread);
 		}
 		if((nread = read(0, buf, BUFSIZE))== 0) // Чтение c stdin
@@ -149,7 +150,7 @@ int main(int argc, char ** argv)
 			//cerr << strcmp(tbuf,eexit) << endl;
 			//write(1,buf,5);
 			//strcat(buf,username);
-			if(write(nfd,buf,nread) < 0)
+			if(write(nfd,buf,nread-1) < 0)
 				perror("write") , exit(1);
 		//	cout <<"Afterrr writte" << endl;
 		}

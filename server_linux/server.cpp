@@ -119,7 +119,10 @@ int main(int argc, char ** argv)
         // Ожидаем соединения, в cfd получим дескриптор присоединенного сокета,
         // в cliaddr - адрес клиента, в clilen - число байт адреса
         if ((cfd = accept(lfd, (sockaddr *)&cliaddr, (socklen_t*)&clilen)) < 0)
-        perror("Accept error: "), exit(1);
+        {
+            perror("Accept error: ");
+            continue;
+        }
         cout <<"Coming new connection ..." << endl;
 
         while ((nread = read(cfd, buf, BUFSIZE))> 0)
@@ -157,7 +160,7 @@ int main(int argc, char ** argv)
                 const char *sddd = tmpstr.c_str();
 
 
-                write(cfd,sddd ,10);
+                write(cfd,sddd ,15);
                 show_list();
 
             }
@@ -193,7 +196,10 @@ int client_routine(int port)// будем обслуживать конкрет�
     sockaddr_in servaddr; // Для адреса сервера
     sockaddr_in cliaddr; // Для адреса клиента
     if ((lfd = socket(AF_INET, SOCK_STREAM, 0))<0) // Создать сокет типа SOCK_STREAM
-        perror("Socket error in thread : "), exit(1);
+    {
+        perror("Socket error in thread : ");
+        return -1;
+    }
 
     memset(&servaddr, 0, SIZE_SOCKADDR); // Обнулить структуру для адреса сервера
     servaddr.sin_family = AF_INET;
@@ -205,11 +211,14 @@ int client_routine(int port)// будем обслуживать конкрет�
     {
         cerr << "Cannot bind thread to port " << port << " : ";
         perror(NULL);
-        exit(1);
+        return -1;
     }
 
     if (listen(lfd, 5) < 0)
-    perror("listen"), exit(1);
+    {
+        perror("listen");
+        return -1;
+    }
 
 
     cout << "Im daughter thread on port " << port << endl;
@@ -218,7 +227,10 @@ int client_routine(int port)// будем обслуживать конкрет�
     // Ожидаем соединения, в cfd получим дескриптор присоединенного сокета,
     // в cliaddr - адрес клиента, в clilen - число байт адреса
     if ((cfd = accept(lfd, (sockaddr *)&cliaddr, (socklen_t*)&clilen)) < 0)
-    perror("Accept error: "), exit(1);
+    {
+        perror("Accept error: ");
+        return -1;
+    }
 
     list< CLIENT_NODE >::iterator iter = CLIENT_LIST.begin();
     for ( ; iter != CLIENT_LIST.end() ; iter++) // находим себя в списке
@@ -248,27 +260,37 @@ int client_routine(int port)// будем обслуживать конкрет�
             dashboard.TYP = MSG;
             dashboard.client_name = iter->client_name;
             string strr = ss.str();
-            strr.erase(strr.find('M'), 4);
+            strr.erase(0, 4);
             dashboard.message = strr;
             dashboard.trig_sender = true; // всем отсылаем нового пользователя
         }
         else if (CMD == "DCT")
         {
+            cout << "Client " << iter->client_name << " disconnected." << endl;
             dashboard.TYP = DCT;
             dashboard.client_name = iter->client_name;
             string strr = ss.str();
             strr.erase(0, 3);
             dashboard.message = strr;
+
+            CLIENT_LIST.erase(iter);
+            //delete iter;
+            show_list();
+
             dashboard.trig_sender = true; // всем отсылаем отключившегося пользователя
+            close(cfd);
+            return 0;
         }
         else
         {
             cout << "Client sent unproper format message"<< endl;
             break;
         }
-        cout << CMD << endl;
+        //cout << CMD << endl;
     }
-
+    cerr << "Tcp connection with user " << iter->client_name << " failed. Closing port." << endl;
+    CLIENT_LIST.erase(iter);
+    //delete iter;
     return 0;
 }
 
