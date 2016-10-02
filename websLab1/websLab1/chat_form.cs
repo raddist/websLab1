@@ -73,6 +73,7 @@ namespace websLab1
             if (testMode)
             {
                 handleTextData(input_TextBox.Text);
+                input_TextBox.Clear();
                 return;
             }
             if (input_TextBox.Text.Length > 4)
@@ -80,6 +81,7 @@ namespace websLab1
                 if (input_TextBox.Text.Remove(3).Equals("::T"))
                 {
                     handleTextData(input_TextBox.Text.Remove(0, 4));
+                    input_TextBox.Clear();
                     return;
                 }
             }
@@ -167,11 +169,14 @@ namespace websLab1
         private void handleTextData(string data)
         {
             cMsgHandler msgHandler = new cMsgHandler(data, output_textBox, ref logins);
-            int change = msgHandler.Sort();
-            rebuildPanel(logins, change);
+            msgHandler.Sort();
+            userList_panel.Invoke(new Action(() =>
+            {
+                rebuildPanel(logins);
+            }));
         }
 
-        private void rebuildPanel(LinkedList<string> logins, int change)
+        private void rebuildPanel(LinkedList<string> logins)
         {
             userList_panel.Controls.Clear();
             LinkedListNode<string> node;
@@ -183,11 +188,11 @@ namespace websLab1
                 lb1.Name = "lbl" + i.ToString();
                 lb1.Text = node.Value;
                 lb1.BorderStyle = BorderStyle.FixedSingle;
-                lb1.Size = new Size(185,20);
+                lb1.Size = new Size(180,20);
                 lb1.Font = new Font("Arial", 12.0F);
 
 
-                lb1.Left = 1;
+                lb1.Location = new Point(1,1);
                 lb1.Top = i*lblHeight;
             }
         }

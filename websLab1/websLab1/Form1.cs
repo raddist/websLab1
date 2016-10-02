@@ -70,7 +70,14 @@ namespace websLab1
 
                     Byte[] bytes = new Byte[256];
                     String data = String.Empty;
-                    int i = stream.Read(bytes, 0, bytes.Length);
+                    int i = 0;
+                    try {
+                        i = stream.Read(bytes, 0, bytes.Length);
+                    }
+                    catch(System.IO.IOException ex)
+                    {
+                        throw ex;
+                    }
                     data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
                     stream.Close();
                     client.Close();
@@ -138,6 +145,11 @@ namespace websLab1
             {
                 error_lbl.Visible = true;
                 error_lbl.Text = "" + ofExc;
+            }
+            catch(System.IO.IOException ioExc)
+            {
+                error_lbl.Visible = true;
+                error_lbl.Text = "" + ioExc;
             }
         }
 

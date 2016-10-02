@@ -19,7 +19,7 @@ namespace websLab1
         }
 
         ///  @brief sort messages by its type
-        public int Sort()
+        public void Sort(int a = 0)
         {
             /// @note prepare code and text
             string code = m_data.Remove(3);
@@ -28,30 +28,48 @@ namespace websLab1
             {
                 case "MSG":
                     {
-                        printMsg(false);
+                        m_textBox.Invoke(new Action(() =>
+                        {
+                            printMsg(true);
+                        }));
                     }
                     break;
                 case "PVT":
                     {
-                        printMsg(true);
+                        m_textBox.Invoke(new Action(() =>
+                        {
+                            printMsg(true);
+                        }));
                     }
                     break;
                 case "LST":
                     {
-                        return showList();
+                        showList();
+                        m_textBox.Invoke(new Action(() =>
+                        {
+                            printMsg(true);
+                        }));
                     }
+                    break;
                 case "NEW":
                     {
-                        return newConnection();
+                        m_textBox.Invoke(new Action(() =>
+                        {
+                            newConnection();
+                        }));
                     }
+                    break;
                 case "DCT":
                     {
-                        return disconnection();
+                        m_textBox.Invoke(new Action(() =>
+                        {
+                            disconnection();
+                        }));
                     }
+                    break;
                 default:
                     break;
             }
-            return 0;
         }
 
         /// @brief print basic or private message in textbox
@@ -76,11 +94,10 @@ namespace websLab1
         }
 
         /// @brief print info about connected user
-        private int newConnection()
+        private void newConnection()
         {
             m_textBox.AppendText(System.Environment.NewLine + DateTime.Now.ToString("HH:mm:ss tt")+ " " + m_data + " is online");
             m_logins.AddFirst(m_data);
-            return 1;
         }
 
         /// @brief print info about disconnected user
