@@ -10,11 +10,15 @@ using System.Windows.Forms;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace websLab1
 {
     public partial class SignIN_form : Form
     {
+
+        private static ManualResetEvent connectDone = new ManualResetEvent(false);
+
         public SignIN_form()
         {
             InitializeComponent();
@@ -56,9 +60,9 @@ namespace websLab1
                 /// @brief checkes is it test mode for debuging
                 if (!testMode)
                 {
-                    TcpClient client = new TcpClient(ip_textBox.Text, port);
-                    client.ReceiveTimeout = 100;
-                    client.SendTimeout = 100;
+                    TcpClient client = new TcpClient();
+                    client.BeginConnect(ip_textBox.Text, port, new AsyncCallback(ConnectCallback), client);
+                    connectDone.WaitOne(100, false);
 
                     NetworkStream stream = client.GetStream();
                     Byte[] msg = System.Text.Encoding.ASCII.GetBytes("NEW " + login_textBox.Text);
@@ -118,12 +122,12 @@ namespace websLab1
             catch (SocketException socExc)
             {
                 error_lbl.Visible = true;
-                error_lbl.Text = "No server connection: " + socExc;
+                error_lbl.Text = "No connection: " + socExc;
             }
             catch (InvalidOperationException ioExc)
             {
                 error_lbl.Visible = true;
-                error_lbl.Text = "" + ioExc;
+                error_lbl.Text = "No connection: " + ioExc;
             }
             catch (FormatException formatExc)
             {
@@ -138,6 +142,21 @@ namespace websLab1
         }
 
         private bool testMode = false;
+
+        /// @brief check connection status
+        private static void ConnectCallback(IAsyncResult ar)
+        {
+            try
+            {
+                TcpClient client = (TcpClient)ar.AsyncState;
+                client.EndConnect(ar); // Complete the connection.
+                connectDone.Set(); // trigger the connectDone event 
+            }
+            catch (Exception)
+            {
+                connectDone.Reset();
+            }
+        }
 
     }
 }
