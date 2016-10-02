@@ -1,6 +1,4 @@
-
 #include "header_serv.h"
-
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -10,6 +8,7 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <termios.h>
 
 #include <iostream>
 #include <string>
@@ -139,6 +138,13 @@ int main(int argc, char ** argv)
         }
         show_time();
         cout <<"Coming new connection ..." << endl;
+
+        struct termios termios;
+
+        tcgetattr(cfd, &termios);
+        termios.c_lflag &= ~ICANON; /* Set non-canonical mode */
+        termios.c_cc[VTIME] = 10; /* Set timeout of 1.0 seconds */
+        tcsetattr(cfd, TCSANOW, &termios);
 
         while ((nread = read(cfd, buf, BUFSIZE))> 0)
         {
@@ -326,8 +332,11 @@ int client_routine(int port)// будем обслуживать конкрет�
         }
         else if (CMD == "PVT")
         {
+
             dashboard.TYP = PVT;
             ss >> dashboard.client_name; // имя получателя
+            show_time();
+            cout << " User " << iter->client_name << " sent private message to " << dashboard.client_name << endl;
             string strr = ss.str();
             strr.erase(0, dashboard.client_name.length() + 4);
             strr = iter->client_name  + strr;
