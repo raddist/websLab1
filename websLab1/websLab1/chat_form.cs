@@ -91,7 +91,8 @@ namespace websLab1
             {
                 if (input_TextBox.Text.Remove(8).Equals("private:"))
                 {
-                    if (logins.Find(input_TextBox.Text.Substring(9, input_TextBox.Text.IndexOf(" "))) != null)
+                    string login = input_TextBox.Text.Substring(8, input_TextBox.Text.IndexOf(" ", 9)-8);
+                    if (logins.Find(login) != null)
                     {
                         msg = System.Text.Encoding.ASCII.GetBytes("PVT " + input_TextBox.Text.Remove(0, 8));
                     }
@@ -109,7 +110,13 @@ namespace websLab1
             {
                 msg = System.Text.Encoding.ASCII.GetBytes("MSG " + input_TextBox.Text);
             }
-            stream.Write(msg, 0, msg.Length);
+            try
+            {
+                stream.Write(msg, 0, msg.Length);
+            }
+            catch (System.IO.IOException ioExc)
+            {
+            }
             input_TextBox.Clear();
         }
 

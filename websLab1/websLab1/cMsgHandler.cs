@@ -44,10 +44,9 @@ namespace websLab1
                     break;
                 case "LST":
                     {
-                        showList();
                         m_textBox.Invoke(new Action(() =>
                         {
-                            printMsg(true);
+                            showList();
                         }));
                     }
                     break;
@@ -90,7 +89,7 @@ namespace websLab1
 
             string text = m_data.Remove(0, m_data.IndexOf(" "));
             m_textBox.AppendText(text);
-            //m_textBox.ForeColor = System.Drawing.Color.Black;
+            m_textBox.ScrollToCaret();
         }
 
         /// @brief print info about connected user

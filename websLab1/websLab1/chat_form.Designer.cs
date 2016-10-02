@@ -161,7 +161,6 @@
             this.title_private.Size = new System.Drawing.Size(515, 17);
             this.title_private.TabIndex = 11;
             this.title_private.Text = "For sending private message write \"private:[target_username] \" at the beggining ";
-            this.title_private.Visible = false;
             // 
             // label1
             // 
