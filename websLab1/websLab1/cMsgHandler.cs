@@ -30,7 +30,7 @@ namespace websLab1
                     {
                         m_textBox.Invoke(new Action(() =>
                         {
-                            printMsg(true);
+                            printMsg(false);
                         }));
                     }
                     break;
