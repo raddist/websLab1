@@ -39,7 +39,7 @@ namespace websLab1
                 {
                     port = Convert.ToInt32(port_textBox.Text);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     throw new System.FormatException("Port is not correct");
                 }
