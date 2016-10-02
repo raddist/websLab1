@@ -14,7 +14,7 @@ websLab1/websLab1/*
 !websLab1/websLab1/Properties/*.config
 !websLab1/websLab1/Properties/*.resx
 !websLab1/websLab1/Properties/*.csproj
-websLab1/websLab1/bin/*
-websLab1/websLab1/bin/Debug/*
-websLab1/websLab1/obj/*
-websLab1/websLab1/obj/Debug/*
+!websLab1/websLab1/bin/*
+!websLab1/websLab1/bin/Debug/*
+!websLab1/websLab1/obj/*
+!websLab1/websLab1/obj/Debug/*
