@@ -17,49 +17,18 @@ namespace websLab1
     {
         //pointer to Sign In form
         SignIN_form old_frm;
+        bool testMode;
 
         NetworkStream stream;
         TcpClient client;
-        Thread myThread;
-        Byte[] bytes = new Byte[256];
-        String data = String.Empty;
-        String code = String.Empty;
+        Thread myThread;                    // thread for listening socket
+        Byte[] bytes = new Byte[256];       // coding text for sending
+        String data = String.Empty;         // text of input message
+        String code = String.Empty;         // code of input message
+        LinkedList<string> logins;                 // count of online user
+        int lblHeight = 25;
 
-        void listen()
-        {
-            int i = 0;
-            output_textBox.Text = "Welcome, " + login_lbl.Text + "!";
-            while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
-            {
-                data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
-                output_textBox.AppendText(System.Environment.NewLine + DateTime.Now.ToString("HH:mm:ss tt") + " ");
-                code = data.Remove(3);
-                data = data.Substring(4, data.Length - 5);
-                switch(code)
-                {
-                    case "MSG":
-                        output_textBox.AppendText(data.Remove(data.IndexOf(" ")) + ": ");
-                        data = data.Remove(0,data.IndexOf(" "));
-                        output_textBox.AppendText(data);
-                        break;
-                    case "PVT":
-                        output_textBox.AppendText("Private: " + data);
-                        break;
-                    case "LST":
-                        output_textBox.AppendText("Online: " + data);
-                        break;
-                    case "NEW":
-                        output_textBox.AppendText(data + " is online");
-                        break;
-                    case "DCT":
-                        output_textBox.AppendText(data + " is offline");
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
+        ///  @brief production ctor
         public chat_form(SignIN_form old_frm, string username, string ip, int port, TcpClient TcpClient, NetworkStream NetworkStream)
         {
             InitializeComponent();
@@ -69,39 +38,92 @@ namespace websLab1
             port_lbl.Text = Convert.ToString(port);
             stream = NetworkStream;
             this.old_frm = old_frm;
+            logins = new LinkedList<string>();
+            userList_panel.AutoScroll = true;
 
             myThread = new Thread(listen);
             myThread.Start();
         }
 
+        ///  @brief test ctor
+        public chat_form(SignIN_form old_frm, string username, string ip, int port, bool itIsTest)
+        {
+            InitializeComponent();
+            login_lbl.Text = username;
+            port_lbl.Text = Convert.ToString(port);
+            this.old_frm = old_frm;
+            logins = new LinkedList<string>();
+
+            testMode = itIsTest;
+        }
+
+        ///  @brief onDisconnectBtn event handler
         private void disconnect_btn_Click(object sender, EventArgs e)
         {
             this.Close();
         }
 
+        ///  @brief onSentBtn event handler
         private void sent_btn_Click(object sender, EventArgs e)
         {
             if (input_TextBox.Text.Equals(""))
                 return;
-            Byte[] msg = System.Text.Encoding.ASCII.GetBytes("MSG " + input_TextBox.Text);
-            stream.Write(msg, 0, msg.Length);
+
+            /// @brief check is it testing
+            if (input_TextBox.Text.Remove(3).Equals("::T") || testMode)
+            {
+                if (!testMode)
+                {
+                    handleTextData(input_TextBox.Text.Remove(0, 4));
+                }
+                else
+                {
+                    handleTextData(input_TextBox.Text);
+                }
+            }
+            else
+            {
+                Byte[] msg;
+                if (input_TextBox.Text.Remove(8).Equals("private:"))
+                {
+                    if (logins.Find(input_TextBox.Text.Substring(9, input_TextBox.Text.IndexOf(" "))) != null)
+                    {
+                        msg = System.Text.Encoding.ASCII.GetBytes("PVT " + input_TextBox.Text.Remove(0, 8));
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    msg = System.Text.Encoding.ASCII.GetBytes("MSG " + input_TextBox.Text);
+                }
+                stream.Write(msg, 0, msg.Length);
+            }           
             input_TextBox.Clear();
         }
 
+        ///  @brief handle closing of the window
+        ///  @note starts after window was closed
         private void chat_form_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Byte[] msg = System.Text.Encoding.ASCII.GetBytes("DCT " + login_lbl.Text);
-            stream.Write(msg, 0, msg.Length);
-            try
+            if (!testMode)
             {
-                myThread.Abort();
-                stream.Close();
-                client.Close();
+                Byte[] msg = System.Text.Encoding.ASCII.GetBytes("DCT " + login_lbl.Text);
+                stream.Write(msg, 0, msg.Length);
+                try
+                {
+                    myThread.Abort();
+                    stream.Close();
+                    client.Close();
+                }
+                catch (ThreadAbortException)
+                {
+                    old_frm.Close();
+                }
             }
-            catch (ThreadAbortException)
-            {
-                old_frm.Close();
-            }
+
             if (e.CloseReason != CloseReason.UserClosing)
             {
                 old_frm.Close();
@@ -112,12 +134,54 @@ namespace websLab1
             }
         }
 
+        ///  @brief onEnterPressed event handler
         private void input_TextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Enter)
             {
                 input_TextBox.Text = input_TextBox.Text.Remove(input_TextBox.Text.Length - 1);
                 sent_btn_Click(sender, e);
+            }
+        }
+
+        ///  @brief main function of thread
+        void listen()
+        {
+            int i = 0;
+            output_textBox.Text = "Welcome, " + login_lbl.Text + "!";
+            while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
+            {
+                data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
+                handleTextData(data);
+            }
+        }
+
+        /// @brief handle data
+        private void handleTextData(string data)
+        {
+            cMsgHandler msgHandler = new cMsgHandler(data, output_textBox, ref logins);
+            int change = msgHandler.Sort();
+            rebuildPanel(logins, change);
+        }
+
+        private void rebuildPanel(LinkedList<string> logins, int change)
+        {
+            userList_panel.Controls.Clear();
+            LinkedListNode<string> node;
+            int i = 0;
+            for (node = logins.First; node != null; node = node.Next, ++i)
+            {
+                Label lb1 = new Label();
+                lb1.Parent = userList_panel;
+                lb1.Name = "lbl" + i.ToString();
+                lb1.Text = node.Value;
+                lb1.BorderStyle = BorderStyle.FixedSingle;
+                lb1.Size = new Size(185,20);
+                lb1.Font = new Font("Arial", 12.0F);
+
+
+                lb1.Left = 1;
+                lb1.Top = i*lblHeight;
             }
         }
     }
