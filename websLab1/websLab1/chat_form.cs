@@ -70,20 +70,23 @@ namespace websLab1
                 return;
 
             /// @brief check is it testing
-            if (input_TextBox.Text.Remove(3).Equals("::T") || testMode)
+            if (testMode)
             {
-                if (!testMode)
+                handleTextData(input_TextBox.Text);
+                return;
+            }
+            if (input_TextBox.Text.Length > 4)
+            {
+                if (input_TextBox.Text.Remove(3).Equals("::T"))
                 {
                     handleTextData(input_TextBox.Text.Remove(0, 4));
-                }
-                else
-                {
-                    handleTextData(input_TextBox.Text);
+                    return;
                 }
             }
-            else
+
+            Byte[] msg;
+            if (input_TextBox.Text.Length > 8)
             {
-                Byte[] msg;
                 if (input_TextBox.Text.Remove(8).Equals("private:"))
                 {
                     if (logins.Find(input_TextBox.Text.Substring(9, input_TextBox.Text.IndexOf(" "))) != null)
@@ -99,8 +102,12 @@ namespace websLab1
                 {
                     msg = System.Text.Encoding.ASCII.GetBytes("MSG " + input_TextBox.Text);
                 }
-                stream.Write(msg, 0, msg.Length);
-            }           
+            }
+            else
+            {
+                msg = System.Text.Encoding.ASCII.GetBytes("MSG " + input_TextBox.Text);
+            }
+            stream.Write(msg, 0, msg.Length);
             input_TextBox.Clear();
         }
 
