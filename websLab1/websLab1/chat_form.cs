@@ -93,7 +93,6 @@ namespace websLab1
                 if (input_TextBox.Text.Remove(8).Equals("private:"))
                 {
                     string login = input_TextBox.Text.Substring(8, input_TextBox.Text.IndexOf(" ", 9) - 8);
-                    input_TextBox.AppendText(System.Environment.NewLine + DateTime.Now.ToString("HH:mm:ss tt") + " " + " bbb");
                     msg = System.Text.Encoding.ASCII.GetBytes("PVT " + input_TextBox.Text.Remove(0, 8));
                 }
                 else
@@ -132,7 +131,7 @@ namespace websLab1
                 }
                 catch(Exception)
                 {
-                    MessageBox.Show("Disconnect with server");
+                    MessageBox.Show("Disconnect");
                     old_frm.Close();
                 }
             }

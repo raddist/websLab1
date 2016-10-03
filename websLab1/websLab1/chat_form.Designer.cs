@@ -1,4 +1,5 @@
-﻿namespace websLab1
+﻿using System;
+namespace websLab1
 {
     partial class chat_form
     {
@@ -13,11 +14,18 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            try
             {
-                components.Dispose();
+                if (disposing && (components != null))
+                {
+                    components.Dispose();
+                }
+                base.Dispose(disposing);
             }
-            base.Dispose(disposing);
+            catch(Exception)
+            {
+                return;
+            }
         }
 
         #region Windows Form Designer generated code

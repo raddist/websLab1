@@ -1,0 +1,4 @@
+H:\Downloads\websLab1\websLab1\websLab1\bin\Release\websLab1.exe.config
+H:\Downloads\websLab1\websLab1\websLab1\obj\Release\websLab1.chat_form.resources
+H:\Downloads\websLab1\websLab1\websLab1\obj\Release\websLab1.SignIN_form.resources
+H:\Downloads\websLab1\websLab1\websLab1\obj\Release\websLab1.csproj.GenerateResource.Cache

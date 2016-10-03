@@ -8,3 +8,21 @@ C:\Users\Andrey\Documents\Univercity\Сети\Сети ЭВМ\websLab1\websLab1\
 C:\Users\Andrey\Documents\Univercity\Сети\Сети ЭВМ\websLab1\websLab1\websLab1\obj\Debug\websLab1.csproj.GenerateResource.Cache
 C:\Users\Andrey\Documents\Univercity\Сети\Сети ЭВМ\websLab1\websLab1\websLab1\obj\Debug\websLab1.exe
 C:\Users\Andrey\Documents\Univercity\Сети\Сети ЭВМ\websLab1\websLab1\websLab1\obj\Debug\websLab1.pdb
+H:\web\websLab1\websLab1\bin\Debug\websLab1.exe.config
+H:\web\websLab1\websLab1\obj\Debug\websLab1.exe
+H:\web\websLab1\websLab1\obj\Debug\websLab1.pdb
+H:\web\websLab1\websLab1\bin\Debug\websLab1.exe
+H:\web\websLab1\websLab1\bin\Debug\websLab1.pdb
+H:\web\websLab1\websLab1\obj\Debug\websLab1.chat_form.resources
+H:\web\websLab1\websLab1\obj\Debug\websLab1.SignIN_form.resources
+H:\web\websLab1\websLab1\obj\Debug\websLab1.Properties.Resources.resources
+H:\web\websLab1\websLab1\obj\Debug\websLab1.csproj.GenerateResource.Cache
+C:\Users\Anton\Desktop\copy\websLab1\websLab1\bin\Debug\websLab1.exe.config
+C:\Users\Anton\Desktop\copy\websLab1\websLab1\obj\Debug\websLab1.exe
+C:\Users\Anton\Desktop\copy\websLab1\websLab1\obj\Debug\websLab1.pdb
+C:\Users\Anton\Desktop\copy\websLab1\websLab1\bin\Debug\websLab1.exe
+C:\Users\Anton\Desktop\copy\websLab1\websLab1\bin\Debug\websLab1.pdb
+C:\Users\Anton\Desktop\copy\websLab1\websLab1\obj\Debug\websLab1.chat_form.resources
+C:\Users\Anton\Desktop\copy\websLab1\websLab1\obj\Debug\websLab1.SignIN_form.resources
+C:\Users\Anton\Desktop\copy\websLab1\websLab1\obj\Debug\websLab1.Properties.Resources.resources
+C:\Users\Anton\Desktop\copy\websLab1\websLab1\obj\Debug\websLab1.csproj.GenerateResource.Cache

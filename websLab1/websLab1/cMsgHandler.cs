@@ -49,12 +49,10 @@ namespace websLab1
                     break;
                 case "LST":
                     {
-
                         m_textBox.Invoke(new Action(() =>
                         {
                             showList();
                         }));
-
                     }
                     break;
                 case "NEW":
