@@ -27,6 +27,7 @@ namespace websLab1
         String code = String.Empty;         // code of input message
         LinkedList<string> logins;                 // count of online user
         int lblHeight = 25;
+        cMsgHandler msgHandler;
 
         ///  @brief production ctor
         public chat_form(SignIN_form old_frm, string username, string ip, int port, TcpClient TcpClient, NetworkStream NetworkStream)
@@ -91,15 +92,9 @@ namespace websLab1
             {
                 if (input_TextBox.Text.Remove(8).Equals("private:"))
                 {
-                    string login = input_TextBox.Text.Substring(8, input_TextBox.Text.IndexOf(" ", 9)-8);
-                    if (logins.Find(login) != null)
-                    {
-                        msg = System.Text.Encoding.ASCII.GetBytes("PVT " + input_TextBox.Text.Remove(0, 8));
-                    }
-                    else
-                    {
-                        return;
-                    }
+                    string login = input_TextBox.Text.Substring(8, input_TextBox.Text.IndexOf(" ", 9) - 8);
+                    input_TextBox.AppendText(System.Environment.NewLine + DateTime.Now.ToString("HH:mm:ss tt") + " " + " bbb");
+                    msg = System.Text.Encoding.ASCII.GetBytes("PVT " + input_TextBox.Text.Remove(0, 8));
                 }
                 else
                 {
@@ -114,8 +109,9 @@ namespace websLab1
             {
                 stream.Write(msg, 0, msg.Length);
             }
-            catch (System.IO.IOException ioExc)
+            catch (Exception)
             {
+                chat_form_FormClosed(null, null);
             }
             input_TextBox.Clear();
         }
@@ -126,16 +122,17 @@ namespace websLab1
         {
             if (!testMode)
             {
-                Byte[] msg = System.Text.Encoding.ASCII.GetBytes("DCT " + login_lbl.Text);
-                stream.Write(msg, 0, msg.Length);
                 try
                 {
+                    Byte[] msg = System.Text.Encoding.ASCII.GetBytes("DCT " + login_lbl.Text);
+                    stream.Write(msg, 0, msg.Length);
                     myThread.Abort();
                     stream.Close();
                     client.Close();
                 }
-                catch (ThreadAbortException)
+                catch(Exception)
                 {
+                    MessageBox.Show("Disconnect with server");
                     old_frm.Close();
                 }
             }
@@ -165,22 +162,37 @@ namespace websLab1
         {
             int i = 0;
             output_textBox.Text = "Welcome, " + login_lbl.Text + "!";
-            while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
+            try
             {
-                data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
-                handleTextData(data);
+                while ( (i = stream.Read(bytes, 0, bytes.Length)) != 0)
+                {
+                    data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
+                    handleTextData(data);
+                }
+            }
+            catch (Exception)
+            {
+                chat_form_FormClosed(null, null);
             }
         }
 
         /// @brief handle data
         private void handleTextData(string data)
         {
-            cMsgHandler msgHandler = new cMsgHandler(data, output_textBox, ref logins);
-            msgHandler.Sort();
-            userList_panel.Invoke(new Action(() =>
+            try
             {
-                rebuildPanel(logins);
-            }));
+                msgHandler = new cMsgHandler(data, output_textBox, ref logins);
+                msgHandler.Sort();
+
+                userList_panel.Invoke(new Action(() =>
+                {
+                    rebuildPanel(logins);
+                }));
+            }
+            catch (Exception)
+            {
+                return;
+            }
         }
 
         private void rebuildPanel(LinkedList<string> logins)
@@ -195,12 +207,12 @@ namespace websLab1
                 lb1.Name = "lbl" + i.ToString();
                 lb1.Text = node.Value;
                 lb1.BorderStyle = BorderStyle.FixedSingle;
-                lb1.Size = new Size(180,20);
+                lb1.Size = new Size(180, 20);
                 lb1.Font = new Font("Arial", 12.0F);
 
 
-                lb1.Location = new Point(1,1);
-                lb1.Top = i*lblHeight;
+                lb1.Location = new Point(1, 1);
+                lb1.Top = i * lblHeight;
             }
         }
     }

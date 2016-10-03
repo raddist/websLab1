@@ -10,8 +10,12 @@ namespace websLab1
 {
     class cMsgHandler
     {
+        string m_data;
+        RichTextBox m_textBox;
+        LinkedList<string> m_logins;
+
         /// @brief ctor
-        public cMsgHandler(string i_data, RichTextBox io_textBox, ref LinkedList<string> i_logins) 
+        public cMsgHandler(string i_data, RichTextBox io_textBox, ref LinkedList<string> i_logins)
         {
             m_data = i_data;
             m_textBox = io_textBox;
@@ -24,6 +28,7 @@ namespace websLab1
             /// @note prepare code and text
             string code = m_data.Remove(3);
             m_data = m_data.Substring(4, m_data.Length - 5);
+
             switch (code)
             {
                 case "MSG":
@@ -44,10 +49,12 @@ namespace websLab1
                     break;
                 case "LST":
                     {
+
                         m_textBox.Invoke(new Action(() =>
                         {
                             showList();
                         }));
+
                     }
                     break;
                 case "NEW":
@@ -69,6 +76,7 @@ namespace websLab1
                 default:
                     break;
             }
+
         }
 
         /// @brief print basic or private message in textbox
@@ -95,7 +103,7 @@ namespace websLab1
         /// @brief print info about connected user
         private void newConnection()
         {
-            m_textBox.AppendText(System.Environment.NewLine + DateTime.Now.ToString("HH:mm:ss tt")+ " " + m_data + " is online");
+            m_textBox.AppendText(System.Environment.NewLine + DateTime.Now.ToString("HH:mm:ss tt") + " " + m_data + " is online");
             m_logins.AddFirst(m_data);
         }
 
@@ -111,16 +119,12 @@ namespace websLab1
         private int showList()
         {
             int numOfUsers = Convert.ToInt32(m_data.Remove(1));
-            string[] logins = m_data.Remove(0,2).Split(' ');
-            for (int i =0; i < numOfUsers; ++i)
-            {               
+            string[] logins = m_data.Remove(0, 2).Split(' ');
+            for (int i = 0; i < numOfUsers; ++i)
+            {
                 m_logins.AddFirst(logins[i]);
             }
             return numOfUsers;
         }
-
-        string m_data;
-        RichTextBox m_textBox;
-        LinkedList<string> m_logins;
     }
 }

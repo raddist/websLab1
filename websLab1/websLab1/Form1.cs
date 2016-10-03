@@ -17,7 +17,7 @@ namespace websLab1
     public partial class SignIN_form : Form
     {
 
-        private static ManualResetEvent connectDone = new ManualResetEvent(false);
+        private static AutoResetEvent connectDone = new AutoResetEvent(false);
 
         public SignIN_form()
         {
@@ -151,6 +151,11 @@ namespace websLab1
                 error_lbl.Visible = true;
                 error_lbl.Text = "" + ioExc;
             }
+            catch (Exception z)
+            {
+                error_lbl.Visible = true;
+                error_lbl.Text = "" + z;
+            }
         }
 
         private bool testMode = false;
@@ -166,7 +171,7 @@ namespace websLab1
             }
             catch (Exception)
             {
-                connectDone.Reset();
+                return;
             }
         }
 
