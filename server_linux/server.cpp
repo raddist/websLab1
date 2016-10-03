@@ -267,7 +267,7 @@ int client_routine(int port)// будем обслуживать конкрет�
 
     string tmps = "";
     int mems = 0;
-    for ( ; iter != CLIENT_LIST.end() ; iter++) // находим себя в списке
+    for ( ; iter != CLIENT_LIST.end() ; iter++) //
     {
         mems++;
         tmps+= iter->client_name + " ";
@@ -285,7 +285,8 @@ int client_routine(int port)// будем обслуживать конкрет�
     dashboard.message = "";
     dashboard.trig_sender = true; // всем отсылаем нового пользователя
 
-    for(int i = 0; i < 1000000; i++);// delay
+    usleep(500000);
+    //for(int i = 0; i < 1000000; i++);// delay
     string v = to_string(mems) +" "+ tmps;
     dashboard.TYP = LST;
     dashboard.client_name = iter->client_name;
